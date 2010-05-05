@@ -65,11 +65,12 @@ class BBIntegrationApiPlugin
      * return the corresponding BB_User.
      */
 	function authenticate($username, $password) {
+	  global $bbdb;
 		if ( $this->api()->is_logged_in() ) {
 			$username = $this->api()->user_info()->{bb_get_option('i_api_user_username')};
 			$password = $this->_get_password();
 		} else {
-			$this->redirect_to_login();
+      $this->redirect_to_login();
 		}
 		$user = bb_get_user_by_name($username);
 
@@ -78,17 +79,26 @@ class BBIntegrationApiPlugin
 			// bbPress user for them.  Are we allowed to 
 			// create one?
 			if ((bool) bb_get_option('i_api_auto_create_user')) {
-				$this->_create_user($username);
-				$user = bb_get_user_by_name($username);
+			  $rails_id =  $this->api()->user_info()->{'id'};
+			  $user_id =  $bbdb->get_var( $bbdb->prepare( "SELECT user_id FROM $bbdb->usermeta WHERE meta_key = 'rails_id' and meta_value = %d", $rails_id ) );
+			  
+			  if(!$user_id){
+			    $this->_create_user($username);
+  				$user = bb_get_user_by_name($username);
+			  }else{
+          $bbdb->update($bbdb->users, array( 'user_login' => $username, 'user_email' => $username ), array('ID' => $user_id ) );
+          $user = bb_get_user($user_id);
+			  }
+				
 			} else {
 				// Bail out to avoid showing the login form
-				bb_die("User $username does not exist in the bbPress database and user auto-creation is disabled.");
+				bb_die("User $username does not exist in the our database and user auto-creation is disabled.");
 			}
 		}
 
 		wp_set_auth_cookie($user->ID, $remember);
 		do_action('bb_user_login', (int) $user->ID );
-		return new BB_User($user->ID);
+		return new WP_User($user->ID);
 	}
 
 

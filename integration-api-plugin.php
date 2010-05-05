@@ -242,14 +242,18 @@ class BBIntegrationApiPlugin
         $u['user_login']     = $username;
         $u['user_email']     = $api_info[bb_get_option('i_api_user_email')];
         $u['user_url']       = $api_info[bb_get_option('i_api_user_website')];
-        // $u['user_firstname'] = $api_info[bb_get_option('i_api_user_firstname')];
-        // $u['user_lastname']  = $api_info[bb_get_option('i_api_user_lastname')];
+        $u['user_firstname'] = $api_info[bb_get_option('i_api_user_firstname')];
+        $u['user_lastname']  = $api_info[bb_get_option('i_api_user_lastname')];
 
-        // $u['nickname']       = $api_info[bb_get_option('i_api_user_nickname')];
-        // $u['display_name']   = $api_info[bb_get_option('i_api_user_display_name')];
-        // $u['description']    = $api_info[bb_get_option('i_api_user_description')];
+        $u['nickname']       = $api_info[bb_get_option('i_api_user_nickname')];
+        $u['display_name']   = $api_info[bb_get_option('i_api_user_display_name')];
+        $u['description']    = $api_info[bb_get_option('i_api_user_description')];
  
-		$u['id'] = bb_new_user( $u['user_login'], $u['user_email'], $u['user_url'] );
-		bb_update_user_password( $u['id'], $u['user_pass'] );
+    		$u['id'] = bb_new_user( $u['user_login'], $u['user_email'], $u['user_url']);
+    		bb_update_user( $u['id'], $u['user_email'], $u['user_url'], $u['nickname'] );
+    		bb_update_user_password( $u['id'], $u['user_pass'] );
+    		bb_update_usermeta($u['id'], 'first_name', $u['user_firstname']);
+    		bb_update_usermeta($u['id'], 'last_name', $u['user_firstname']);
+    		bb_update_usermeta($u['id'], 'rails_id', $api_info['id']);
     }
 }

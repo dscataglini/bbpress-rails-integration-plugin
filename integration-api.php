@@ -1,7 +1,7 @@
 <?php
 /*
 Plugin Name: BBPress 2 Rails Integration API
-Version: 0.5
+Version: 0.5.1
 Plugin URI: http://greenfabric.com/page/integration_api_home_page
 Description: Enable single sign-on between bbPress and Ruby on Rails.
 Author: Scott Bonds

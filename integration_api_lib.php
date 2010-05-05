@@ -23,6 +23,7 @@ class BBIntegrationApi
     public static $cached_config_info = false;
     public $request;
     public static $user_info;
+    public static $user_info_called = false;
 
     public function __construct($url) {
         $this->server_path = $url;
@@ -47,9 +48,10 @@ class BBIntegrationApi
         if ($this->rails_cookie_value() == NULL) {
             return null;
         }
-        if (!self::$user_info) {
+        if (!self::$user_info && !self::$user_info_called) {
             $json_data = $this->api_request("user/" . $this->rails_cookie_value());
             self::$user_info = $json_data->{'user'};
+            self::$user_info_called = true;
         }
         return self::$user_info;
     }

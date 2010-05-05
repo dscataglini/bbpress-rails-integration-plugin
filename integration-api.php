@@ -101,7 +101,7 @@ if ($integration_api_plugin->isActive()) {
     	     */
     	    if (! $api->is_logged_in()) {
     	        bb_set_current_user(0);
-    	        wp_clear_auth_cookie();
+    	        // wp_clear_auth_cookie();
     	        return false;
     	    }
     

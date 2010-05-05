@@ -232,7 +232,7 @@ class BBIntegrationApiPlugin
      */
     private function _create_user($username) {
 
-        require_once(BB_PATH . BBINC . DIRECTORY_SEPARATOR . 'registration-functions.php');
+        require_once(BB_PATH . BBINC . DIRECTORY_SEPARATOR . 'functions.bb-pluggable.php');
         
         $api_info = (array) $this->api()->user_info();
 

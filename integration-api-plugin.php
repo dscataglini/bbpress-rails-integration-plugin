@@ -257,3 +257,48 @@ class BBIntegrationApiPlugin
     		bb_update_usermeta($u['id'], 'rails_id', $api_info['id']);
     }
 }
+
+// overriding default behavior to not send email
+function bb_new_user( $user_login, $user_email, $user_url, $user_status = 1 ) {
+	global $wp_users_object, $bbdb;
+
+	// is_email check + dns
+	if ( !$user_email = is_email( $user_email ) )
+		return new WP_Error( 'user_email', __( 'Invalid email address' ), $user_email );
+
+	if ( !$user_login = sanitize_user( $user_login, true ) )
+		return new WP_Error( 'user_login', __( 'Invalid username' ), $user_login );
+
+	// user_status = 1 means the user has not yet been verified
+	$user_status = is_numeric($user_status) ? (int) $user_status : 1;
+	if ( defined( 'BB_INSTALLING' ) )
+		$user_status = 0;
+
+	$user_nicename = $_user_nicename = bb_user_nicename_sanitize( $user_login );
+	if ( strlen( $_user_nicename ) < 1 )
+		return new WP_Error( 'user_login', __( 'Invalid username' ), $user_login );
+
+	while ( is_numeric($user_nicename) || $existing_user = bb_get_user_by_nicename( $user_nicename ) )
+		$user_nicename = bb_slug_increment($_user_nicename, $existing_user->user_nicename, 50);
+
+	$user_url = $user_url ? bb_fix_link( $user_url ) : '';
+
+	$user_pass = bb_generate_password();
+
+	$user = $wp_users_object->new_user( compact( 'user_login', 'user_email', 'user_url', 'user_nicename', 'user_status', 'user_pass' ) );
+	if ( is_wp_error($user) ) {
+		if ( 'user_nicename' == $user->get_error_code() )
+			return new WP_Error( 'user_login', $user->get_error_message() );
+		return $user;
+	}
+
+	if (BB_INSTALLING) {
+		bb_update_usermeta( $user['ID'], $bbdb->prefix . 'capabilities', array('keymaster' => true) );
+	} else {
+		bb_update_usermeta( $user['ID'], $bbdb->prefix . 'capabilities', array('member' => true) );
+    // bb_send_pass( $user['ID'], $user['plain_pass'] );
+	}
+
+	do_action('bb_new_user', $user['ID'], $user['plain_pass']);
+	return $user['ID'];
+}
